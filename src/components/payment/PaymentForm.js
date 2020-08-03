@@ -8,6 +8,9 @@ import React, { useState, useRef } from "react";
 
 export const PaymentForm = () => {
   const [options, setOptions] = useState([]);
+  const [doSubmit, setDoSubmit] = useState(false);
+  const [cardToken, setCardToken] = useState(null);
+  const payFormRef = useRef(null);
   const cardNumRef = useRef(null);
   const paymentIdRef = useRef(null);
   const transAmountRef = useRef(null);
@@ -75,10 +78,52 @@ export const PaymentForm = () => {
     );
   };
 
+  // doSubmit = false;
+  // document.querySelector("#pay").addEventListener("submit", doPay);
+
+  const doPay = (event) => {
+    event.preventDefault();
+    if (!doSubmit) {
+      // var $form = document.querySelector("#pay");
+      let $form = payFormRef.current;
+
+      window.Mercadopago.createToken($form, sdkResponseHandler);
+
+      return false;
+    }
+  };
+
+  function sdkResponseHandler(status, response) {
+    console.log(status, "status");
+    console.log(response?.cause);
+    if (status !== 200 && status !== 201) {
+      alert("verify filled data");
+    } else {
+      // var form = document.querySelector("#pay");
+      let form = payFormRef.current;
+      // var card = document.createElement("input");
+      // card.setAttribute("name", "token");
+      // card.setAttribute("type", "hidden");
+      // card.setAttribute("value", response.id);
+      setCardToken(<input name="token" type="hidden" value={response.id} />)
+      // form.appendChild(card);
+      // doSubmit = true;
+      setDoSubmit(true);
+      // form.submit();
+    }
+  }
+
   return (
     <>
       {/* {JSON.stringify(options)} */}
-      <form action="/procesar_pago.php" method="post" id="pay" name="pay">
+      <form
+        ref={payFormRef}
+        onSubmit={doPay}
+        action="/procesar_pago.php"
+        method="post"
+        id="pay"
+        name="pay"
+      >
         <fieldset>
           <p>
             <label htmlFor="description">Descripción</label>
@@ -206,6 +251,7 @@ export const PaymentForm = () => {
             id="payment_method_id"
           />
           <input type="submit" value="Pagar" />
+          {cardToken}
         </fieldset>
       </form>
     </>
