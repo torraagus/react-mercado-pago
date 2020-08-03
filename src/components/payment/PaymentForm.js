@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import Axios from "axios";
 
 /*
     QUEDE EN INTEGRAR DATOS DE TARJETA PASO 4!
@@ -15,6 +16,8 @@ export const PaymentForm = () => {
   const paymentIdRef = useRef(null);
   const transAmountRef = useRef(null);
   const installmentsRef = useRef(null);
+
+  const transaction_ammount = 100;
 
   window.Mercadopago.setPublishableKey(
     "TEST-0dc15ecd-471b-4b8e-9591-7f7a5b8c8acd"
@@ -105,7 +108,10 @@ export const PaymentForm = () => {
       // card.setAttribute("name", "token");
       // card.setAttribute("type", "hidden");
       // card.setAttribute("value", response.id);
-      setCardToken(<input name="token" type="hidden" value={response.id} />)
+      setCardToken(
+        <input name="token" type="hidden" value={response.id} />,
+        processPayment()
+      );
       // form.appendChild(card);
       // doSubmit = true;
       setDoSubmit(true);
@@ -113,13 +119,26 @@ export const PaymentForm = () => {
     }
   }
 
+  const processPayment = () => {
+    console.log("proo...");
+    Axios.post(
+      "/procesar_pago",
+      { transaction_ammount },
+      {
+        "Content-Type": "application/json",
+      }
+    )
+      .then((res) => console.log(res))
+      .catch((err) => console.log(err));
+  };
+
   return (
     <>
       {/* {JSON.stringify(options)} */}
       <form
         ref={payFormRef}
         onSubmit={doPay}
-        action="/procesar_pago.php"
+        // action={() => processPayment()}
         method="post"
         id="pay"
         name="pay"
@@ -142,7 +161,7 @@ export const PaymentForm = () => {
               ref={transAmountRef}
               name="transaction_amount"
               id="transaction_amount"
-              value="100"
+              value={transaction_ammount}
             />
           </p>
           <p>
