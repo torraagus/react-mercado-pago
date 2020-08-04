@@ -3,30 +3,30 @@ const express = require("express");
 const app = express();
 
 const mercadopago = require("mercadopago");
-// const Axios = require("axios");
 
 app.use(express.json());
 app.use(express.static(__dirname + "/build"));
 
 mercadopago.configure({
-  sandbox: true,
-  access_token: process.env.ACCESS_TOKEN,
+	sandbox: true,
+	access_token: process.env.ACCESS_TOKEN,
 });
 
-// app.get("/medios", function (req, res) {
-//   Axios.get(
-//     `https://api.mercadopago.com/v1/payment_methods?access_token=${process.env.ACCESS_TOKEN}`
-//   )
-//     .then((response) => res.status(response.status).send(response.data))
-//     .catch((err) => res.sendStatus(500).send(err));
-// });
-
 app.post("/procesar_pago", (req, res) => {
-  console.log("procesando pago...");
-  console.log(req.body, "Body request");
-  res.send("Muy bien");
+	let payment_data = req.body;
+
+	mercadopago.payment
+		.save(payment_data)
+		.then((data) => {
+			console.log(data, "-----> Data!!!");
+			res.status(data.status).send(data.body);
+		})
+		.catch((error) => {
+      console.log(error, "-----> Error!!!");
+      res.status(error.status).send(error);
+		});
 });
 
 app.listen(3000, function () {
-  console.log("Server runnning on port 3000");
+	console.log("Server runnning on port 3000");
 });
