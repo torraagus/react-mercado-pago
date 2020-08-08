@@ -1,22 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import { PaymentForm } from "./components/payment/PaymentForm";
-import styled from "styled-components";
 import { Products } from "./components/products/Products";
 import { useScroller } from "./hooks/useScroller";
-
-const Title = styled.h1`
-	color: #581b98;
-	margin: 2rem 0 0 0;
-	padding-top: 1rem;
-`;
-
-const Subtitle = styled.p`
-	color: #f3558e;
-	letter-spacing: 3px;
-	margin: 0;
-	margin-bottom: 2rem;
-`;
+import { Title, Subtitle } from "./components/shared/shared.styles";
 
 function App() {
 	const [paymentVisible, setPaymentVisible] = useState(false);
@@ -67,7 +54,7 @@ function App() {
 					<Title ref={payTitleRef}>Pay product</Title>
 					<Subtitle>{selectedProduct?.desc}</Subtitle>
 					<PaymentForm
-						amount={selectedProduct?.price}
+						product={selectedProduct}
 						onProcessingPayment={handleOnProcessingPayment}
 						onPaymentSuccess={handleOnPaymentSuccess}
 						onPaymentError={handleOnPaymentError}
