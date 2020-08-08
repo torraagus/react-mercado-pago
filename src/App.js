@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import { PaymentForm } from "./components/payment/PaymentForm";
 import styled from "styled-components";
 import { Products } from "./components/products/Products";
+import { useScroller } from "./hooks/useScroller";
 
 const Title = styled.h1`
 	color: #581b98;
 	margin: 2rem 0 0 0;
+	padding-top: 1rem;
 `;
 
 const Subtitle = styled.p`
@@ -22,8 +24,12 @@ function App() {
 	const [paymentState, setPaymentState] = useState(null);
 	const [paymentErr, setPaymentErr] = useState(null);
 	const [selectedProduct, setSelectedProduct] = useState(null);
+	const { scrollTo } = useScroller();
+
+	const payTitleRef = useRef(null);
 
 	const handleOnProductSelected = (product) => {
+		if (paymentVisible) scrollTo(payTitleRef.current.offsetTop);
 		setPaymentVisible(true);
 		setSelectedProduct(() => product);
 	};
@@ -40,8 +46,13 @@ function App() {
 
 	const handleOnPaymentError = (err) => {
 		setPaymentErr(`${err}`);
-		// setProcessingPayment(false);
 	};
+
+	useEffect(() => {
+		setTimeout(() => {
+			if (paymentVisible) scrollTo(payTitleRef.current.offsetTop);
+		}, 0);
+	}, [paymentVisible, scrollTo]);
 
 	return (
 		<div className="App">
@@ -53,7 +64,7 @@ function App() {
 			)}
 			{paymentVisible && !processingPayment && (
 				<>
-					<Title>Pay product</Title>
+					<Title ref={payTitleRef}>Pay product</Title>
 					<Subtitle>{selectedProduct?.desc}</Subtitle>
 					<PaymentForm
 						amount={selectedProduct?.price}
