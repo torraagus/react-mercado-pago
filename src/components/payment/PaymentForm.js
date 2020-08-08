@@ -63,8 +63,8 @@ const Form = styled.form`
 
 	@media (max-width: 512px) {
 		width: 90%;
-		height: 40vh;
-		overflow-y: auto;
+		// height: 40vh;
+		// overflow-y: auto;
 	}
 `;
 
@@ -147,6 +147,19 @@ const Label = styled.label`
 	margin-bottom: 0.5rem;
 `;
 
+const CardWrapper = styled.div`
+	position: -webkit-sticky;
+	position: sticky;
+	top: 0;
+	background-color: #581b98;
+	width: 100vw;
+	padding: 1rem 0 1rem 0;
+
+	@media (min-width: 768px) {
+		width: 75vw;
+	}
+`;
+
 export const PaymentForm = ({
 	amount,
 	onProcessingPayment,
@@ -157,6 +170,7 @@ export const PaymentForm = ({
 	const [options, setOptions] = useState([]);
 	const [doSubmit, setDoSubmit] = useState(false);
 	const [cardToken, setCardToken] = useState(null);
+	const [focus, setFocus] = useState("");
 
 	const [transactionAmount, setTransactionAmount] = useState(amount);
 	const [cardNumber, setCardNumber] = useState("4509 9535 6623 3704");
@@ -289,13 +303,16 @@ export const PaymentForm = ({
 
 	return (
 		<>
-			<Cards
-				number={cardNumber}
-				name={cardHolderName}
-				expiry={`${cardExpirationMonth}${cardExpirationYear}`}
-				cvc={securityCode}
-				// focused={focus}
-			/>
+			<CardWrapper>
+				<Cards
+					number={cardNumber}
+					name={cardHolderName}
+					expiry={`${cardExpirationMonth}${cardExpirationYear}`}
+					cvc={securityCode}
+					className="tarjeta"
+					focused={focus}
+				/>
+			</CardWrapper>
 			{paymentState && <p>The payment was {paymentState}</p>}
 			<Form
 				isVisible={doSubmit}
@@ -321,10 +338,12 @@ export const PaymentForm = ({
 						ref={focusRef}
 						type="text"
 						id="cardNumber"
+						name="number"
 						data-checkout="cardNumber"
 						autoComplete="off"
 						onKeyUp={(e) => setCardNumber(e.target.value)}
 						onChange={(e) => setCardNumber(e.target.value)}
+						onFocus={(e) => setFocus(e.target.name)}
 						value={cardNumber}
 					/>
 				</InputWrapper>
@@ -332,9 +351,11 @@ export const PaymentForm = ({
 					<Label htmlFor="cardholderName">Nombre y apellido</Label>
 					<Input
 						type="text"
+						name="name"
 						id="cardholderName"
 						data-checkout="cardholderName"
 						onChange={(e) => setCardHolderName(e.target.value)}
+						onFocus={(e) => setFocus(e.target.name)}
 						value={cardHolderName}
 					/>
 				</InputWrapper>
@@ -343,9 +364,11 @@ export const PaymentForm = ({
 					<Input
 						type="text"
 						id="cardExpirationMonth"
+						name="expiry"
 						data-checkout="cardExpirationMonth"
 						autoComplete="off"
 						onChange={(e) => setCardExpirationMonth(e.target.value)}
+						onFocus={(e) => setFocus(e.target.name)}
 						value={cardExpirationMonth}
 					/>
 				</InputWrapper>
@@ -354,9 +377,11 @@ export const PaymentForm = ({
 					<Input
 						type="text"
 						id="cardExpirationYear"
+						name="expiry"
 						data-checkout="cardExpirationYear"
 						autoComplete="off"
 						onChange={(e) => setCardExpirationYear(e.target.value)}
+						onFocus={(e) => setFocus(e.target.name)}
 						value={cardExpirationYear}
 					/>
 				</InputWrapper>
@@ -365,9 +390,11 @@ export const PaymentForm = ({
 					<Input
 						type="text"
 						id="securityCode"
+						name="cvc"
 						data-checkout="securityCode"
 						autoComplete="off"
 						onChange={(e) => setSecurityCode(e.target.value)}
+						onFocus={(e) => setFocus(e.target.name)}
 						value={securityCode}
 					/>
 				</InputWrapper>
