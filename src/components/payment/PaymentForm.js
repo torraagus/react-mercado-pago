@@ -2,166 +2,19 @@ import React, { useState, useRef, useEffect, Fragment } from "react";
 import Axios from "axios";
 import Cards from "react-credit-cards";
 import "react-credit-cards/es/styles-compiled.css";
-import styled from "styled-components";
-
-const SubmitBtn = styled.input`
-	background-color: #581b98;
-	color: #faee1c;
-	font-weight: bold;
-	outline: none;
-	border: none;
-	text-transform: uppercase;
-	height: 50px;
-	width: 40%;
-	align-self: center;
-	text-indent: 0;
-	border-radius: 15px;
-	letter-spacing: 2px;
-	margin-top: 2rem;
-
-	-webkit-box-shadow: 10px 10px 5px 0px #651a1b31;
-	-moz-box-shadow: 10px 10px 5px 0px #651a1b2f;
-	box-shadow: 5px 5px 5px 0px #651a1b27;
-
-	:hover {
-		cursor: pointer;
-		opacity: 90%;
-	}
-
-	@media (max-width: 512px) {
-		margin-top: 1rem;
-		width: 100%;
-	}
-`;
-
-const Select = styled.select`
-	height: 40px;
-	text-indent: 0.25rem;
-	letter-spacing: 1px;
-`;
-
-const Form = styled.form`
-	width: 40%;
-	display: ${(props) => (props.isVisible ? "none" : "flex")};
-	flex-wrap: wrap;
-	margin: 2rem 0 1rem 0;
-	padding-bottom: 2rem;
-	// justify-content: center;
-	// background-color: tomato;
-
-	@media (max-width: 1366px) {
-		width: 60%;
-	}
-
-	@media (max-width: 1024px) {
-		width: 70%;
-	}
-
-	@media (max-width: 768px) {
-		width: 80%;
-	}
-
-	@media (max-width: 512px) {
-		width: 90%;
-		// height: 40vh;
-		// overflow-y: auto;
-	}
-`;
-
-const InputWrapper = styled.p`
-	display: flex;
-	flex-direction: column;
-	text-align: left;
-	width: 100%;
-	margin: 0.5rem 0.25rem 0.5rem 0.25rem;
-
-	@media (max-width: 2000px) {
-		:nth-child(1),
-		:nth-child(2) {
-			width: 47%;
-		}
-
-		:nth-child(6),
-		:nth-child(9) {
-			width: 100%;
-		}
-
-		:nth-child(3),
-		:nth-child(4),
-		:nth-child(7) {
-			width: 31%;
-		}
-
-		:nth-child(8) {
-			width: 65%;
-		}
-
-		:nth-child(5) {
-			width: 31%;
-		}
-	}
-
-	@media (max-width: 768px) {
-		width: 100%;
-
-		:nth-child(3),
-		:nth-child(4),
-		:nth-child(7) {
-			width: 31%;
-		}
-
-		:nth-child(8) {
-			width: 65%;
-		}
-
-		:nth-child(5) {
-			width: 31%;
-		}
-	}
-
-	@media (max-width: 512px) {
-		width: 100%;
-
-		:nth-child(n) {
-			width: 100%;
-		}
-	}
-`;
-
-const Input = styled.input`
-	height: 34px;
-	text-indent: 0.5rem;
-	letter-spacing: 1px;
-
-	:focus {
-		outline: none;
-		border: 1px solid #f3558e;
-		border-bottom: 2px solid #9c1de7;
-		border-left: 2px solid #9c1de7;
-		background-color: #9d1de713;
-	}
-`;
-
-const Label = styled.label`
-	letter-spacing: 2px;
-	margin-bottom: 0.5rem;
-`;
-
-const CardWrapper = styled.div`
-	position: -webkit-sticky;
-	position: sticky;
-	top: 0;
-	background-color: #581b98;
-	width: 100vw;
-	padding: 1rem 0 1rem 0;
-
-	@media (min-width: 768px) {
-		width: 75vw;
-	}
-`;
+import {
+	CardWrapper,
+	InputWrapper,
+	SubmitBtn,
+	Form,
+	Input,
+	Label,
+	Select,
+} from "./paymentForm.styles";
+require("dotenv").config();
 
 export const PaymentForm = ({
-	amount,
+	product,
 	onProcessingPayment,
 	onPaymentSuccess,
 	onPaymentError,
@@ -172,7 +25,7 @@ export const PaymentForm = ({
 	const [cardToken, setCardToken] = useState(null);
 	const [focus, setFocus] = useState("");
 
-	const [transactionAmount, setTransactionAmount] = useState(amount);
+	const [transactionAmount, setTransactionAmount] = useState(product.price);
 	const [cardNumber, setCardNumber] = useState("4509 9535 6623 3704");
 	const [cardHolderName, setCardHolderName] = useState("");
 	const [cardExpirationMonth, setCardExpirationMonth] = useState("11");
@@ -182,17 +35,11 @@ export const PaymentForm = ({
 	const [email, setEmail] = useState("");
 	const [paymentMethodId, setPaymentMethodId] = useState("");
 	const [installments, setInstallments] = useState(1);
-	const [description, setDescription] = useState("Some product");
 	const [paymentState, setPaymentState] = useState(null);
 
 	// Refs
 	const payFormRef = useRef(null);
 	const focusRef = useRef(null);
-
-	window.Mercadopago.setPublishableKey(
-		"TEST-0dc15ecd-471b-4b8e-9591-7f7a5b8c8acd"
-	);
-	window.Mercadopago.getIdentificationTypes();
 
 	useEffect(() => {
 		if (cardNumber.length >= 6) {
@@ -207,6 +54,8 @@ export const PaymentForm = ({
 	}, [cardNumber]);
 
 	useEffect(() => {
+		window.Mercadopago.setPublishableKey(process.env.REACT_APP_PUBLIC_KEY);
+		window.Mercadopago.getIdentificationTypes();
 		focusRef.current.focus();
 	}, []);
 
@@ -216,16 +65,12 @@ export const PaymentForm = ({
 
 	useEffect(() => {
 		if (paymentMethodId) getInstallments();
-	}, [paymentMethodId]);
+	}, [paymentMethodId, transactionAmount]);
 
 	useEffect(() => {
-		setTransactionAmount(() => amount);
+		setTransactionAmount(() => product.price);
 		if (paymentMethodId) getInstallments();
-	}, [amount]);
-
-	useEffect(() => {
-		if (paymentMethodId) getInstallments();
-	}, [transactionAmount]);
+	}, [product]);
 
 	const setPaymentMethod = (status, response) => {
 		if (status === 200) {
@@ -275,7 +120,7 @@ export const PaymentForm = ({
 			{
 				transaction_amount: transactionAmount,
 				token: cardToken,
-				description,
+				description: "Some product",
 				installments,
 				payment_method_id: paymentMethodId,
 				payer: {
@@ -322,16 +167,6 @@ export const PaymentForm = ({
 				id="pay"
 				name="pay"
 			>
-				{/* <p>
-					<Label htmlFor="description">Descripción</Label>
-					<Input
-					type="text"
-					name="description"
-					id="description"
-					value={description}
-					onChange={(e) => setDescription(e.target.value)}
-					/>
-				</p> */}
 				<InputWrapper>
 					<Label htmlFor="cardNumber">Número de la tarjeta</Label>
 					<Input
@@ -398,18 +233,6 @@ export const PaymentForm = ({
 						value={securityCode}
 					/>
 				</InputWrapper>
-				{/* <p>
-						<Label htmlFor="transaction_amount">Monto a pagar</Label>
-						<Input
-							name="transaction_amount"
-							id="transaction_amount"
-							type="number"
-							value={transactionAmount}
-							onChange={(e) =>
-								setTransactionAmount(Number.parseInt(e.target.value))
-							}
-						/>
-					</p> */}
 				<InputWrapper>
 					<Label htmlFor="installments">Cuotas</Label>
 					<Select
