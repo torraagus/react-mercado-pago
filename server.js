@@ -22,8 +22,8 @@ app.post("/procesar_pago", (req, res) => {
 			res.status(data.status).send(data.body);
 		})
 		.catch((error) => {
-      console.log(error, "-----> Error!!!");
-      res.status(error.status).send(error);
+			console.log(error, "-----> Error!!!");
+			res.status(500).send(error);
 		});
 });
 
