@@ -198,6 +198,7 @@ export const Error = styled.p`
 	color: white;
 	letter-spacing: 1px;
 	display: flex;
+	align-items: center;
 `;
 
 export const ErrorMessage = styled.p`
