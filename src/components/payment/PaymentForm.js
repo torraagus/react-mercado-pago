@@ -10,7 +10,14 @@ import {
 	Input,
 	Label,
 	Select,
+	ErrorWrapper,
+	Error,
+	ErrorMessage,
+	ErrorList,
+	ErrorCause,
+	CauseDescription,
 } from "./paymentForm.styles";
+import { MdErrorOutline } from "react-icons/md";
 require("dotenv").config();
 
 export const PaymentForm = ({
@@ -23,6 +30,7 @@ export const PaymentForm = ({
 	const [options, setOptions] = useState([]);
 	const [doSubmit, setDoSubmit] = useState(false);
 	const [cardToken, setCardToken] = useState(null);
+	const [error, setError] = useState(null);
 	const [focus, setFocus] = useState("");
 
 	const [transactionAmount, setTransactionAmount] = useState(product.price);
@@ -106,7 +114,9 @@ export const PaymentForm = ({
 
 	const sdkResponseHandler = (status, response) => {
 		if (status !== 200 && status !== 201) {
-			alert("verify filled data");
+			//alert("verify filled data");
+			console.log(response);
+			setError(response);
 		} else {
 			setCardToken(response.id);
 			setDoSubmit(true);
@@ -132,15 +142,12 @@ export const PaymentForm = ({
 			}
 		)
 			.then((res) => {
-				console.log(res.data);
-				console.log(res.data.status);
-				console.log(res.data.status_detail);
 				setDoSubmit(false);
 				setPaymentState(res.data.status);
 				onPaymentSuccess(res.data.status);
 			})
 			.catch((err) => {
-				console.log(err);
+				console.log(`${err}`);
 				onPaymentError(err);
 				setDoSubmit(false);
 			});
@@ -158,7 +165,24 @@ export const PaymentForm = ({
 					focused={focus}
 				/>
 			</CardWrapper>
-			{paymentState && <p>The payment was {paymentState}</p>}
+			{error && (
+				<ErrorWrapper>
+					<Error>
+						<MdErrorOutline size={28} style={{ "margin-right": ".5rem" }} />
+						{error.error}
+					</Error>
+					<ErrorMessage>{error.message}</ErrorMessage>
+					<ErrorList>
+						{error.cause.length > 0 &&
+							error.cause.map((cause) => (
+								<ErrorCause>
+									(Cod. {cause.code}) -{" "}
+									<CauseDescription>{cause.description}.</CauseDescription>
+								</ErrorCause>
+							))}
+					</ErrorList>
+				</ErrorWrapper>
+			)}
 			<Form
 				isVisible={doSubmit}
 				ref={payFormRef}
@@ -197,7 +221,7 @@ export const PaymentForm = ({
 				<InputWrapper>
 					<Label htmlFor="cardExpirationMonth">Mes de vencimiento</Label>
 					<Input
-						type="text"
+						type="number"
 						id="cardExpirationMonth"
 						name="expiry"
 						data-checkout="cardExpirationMonth"
@@ -210,7 +234,7 @@ export const PaymentForm = ({
 				<InputWrapper>
 					<Label htmlFor="cardExpirationYear">Año de vencimiento</Label>
 					<Input
-						type="text"
+						type="number"
 						id="cardExpirationYear"
 						name="expiry"
 						data-checkout="cardExpirationYear"
@@ -223,7 +247,7 @@ export const PaymentForm = ({
 				<InputWrapper>
 					<Label htmlFor="securityCode">Código de seguridad</Label>
 					<Input
-						type="text"
+						type="number"
 						id="securityCode"
 						name="cvc"
 						data-checkout="securityCode"
@@ -257,7 +281,7 @@ export const PaymentForm = ({
 				<InputWrapper>
 					<Label htmlFor="docNumber">Número de documento</Label>
 					<Input
-						type="text"
+						type="number"
 						id="docNumber"
 						data-checkout="docNumber"
 						onChange={(e) => setDocNumber(e.target.value)}
@@ -275,12 +299,6 @@ export const PaymentForm = ({
 						value={email}
 					/>
 				</InputWrapper>
-				<Input
-					type="hidden"
-					name="payment_method_id"
-					id="payment_method_id"
-					value={paymentMethodId}
-				/>
 				<InputWrapper>
 					<SubmitBtn type="submit" value="Pagar" />
 				</InputWrapper>
