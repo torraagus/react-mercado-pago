@@ -4,6 +4,7 @@ import { PaymentForm } from "./components/payment/PaymentForm";
 import { Products } from "./components/products/Products";
 import { useScroller } from "./hooks/useScroller";
 import { Title, Subtitle } from "./components/shared/shared.styles";
+import ScrollArrow from "./components/scrollArrow/ScrollArrow";
 
 function App() {
 	const [paymentVisible, setPaymentVisible] = useState(false);
@@ -35,15 +36,15 @@ function App() {
 		setPaymentErr(`${err}`);
 	};
 
-	useEffect(() => {
-		setTimeout(() => {
-			if (paymentVisible) scrollTo(payTitleRef.current.offsetTop);
-		}, 0);
-	}, [paymentVisible, scrollTo]);
+	// useEffect(() => {
+	// 	setTimeout(() => {
+	// 		if (paymentVisible) scrollTo(payTitleRef.current.offsetTop);
+	// 	}, 0);
+	// }, [paymentVisible, scrollTo]);
 
 	return (
 		<div className="App">
-			{!processingPayment && (
+			{!processingPayment && !paymentVisible && (
 				<>
 					<Title>Select a product</Title>
 					<Products onProductSelected={handleOnProductSelected} />
@@ -77,6 +78,7 @@ function App() {
 					)}
 				</div>
 			)}
+			<ScrollArrow onArrowPressed={() => setPaymentVisible(false)} show={paymentVisible} />
 		</div>
 	);
 }
