@@ -24,6 +24,10 @@ export const SubmitBtn = styled.input`
 		opacity: 90%;
 	}
 
+	:active {
+		opacity: 75%;
+	}
+
 	@media (max-width: 512px) {
 		margin-top: 1rem;
 		width: 100%;
@@ -153,5 +157,72 @@ export const CardWrapper = styled.div`
 
 	@media (min-width: 768px) {
 		width: 75vw;
+	}
+`;
+
+export const ErrorWrapper = styled.div`
+	border: 1px solid #ff304f;
+	border-bottom: 3px solid #ff304f;
+	padding-bottom: 0.5rem;
+	margin-top: 1rem;
+	border-radius: 0 0 15px 15px;
+	text-align: left;
+	width: 40%;
+	// background-color: #ff304f;
+	color: #ff304f;
+
+	@media (max-width: 1366px) {
+		width: 60%;
+	}
+
+	@media (max-width: 1024px) {
+		width: 70%;
+	}
+
+	@media (max-width: 768px) {
+		width: 80%;
+	}
+
+	@media (max-width: 512px) {
+		width: 90%;
+	}
+`;
+
+export const Error = styled.p`
+	text-transform: uppercase;
+	font-size: 18px;
+	font-weight: bold;
+	margin: 0;
+	background-color: #ff304f;
+	padding: 1rem;
+	color: white;
+	letter-spacing: 1px;
+	display: flex;
+`;
+
+export const ErrorMessage = styled.p`
+	padding-left: 1rem;
+	letter-spacing: 2px;
+	::first-letter {
+		text-transform: capitalize;
+	}
+`;
+
+export const ErrorList = styled.ul`
+	list-style: none;
+	padding: 0;
+`;
+
+export const ErrorCause = styled.li`
+	padding-left: 1rem;
+	letter-spacing: 1px;
+	font-weight: 500;
+`;
+
+export const CauseDescription = styled.p`
+	margin: 0;
+	display: inline-block;
+	::first-letter {
+		text-transform: capitalize;
 	}
 `;
