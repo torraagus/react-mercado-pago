@@ -14,7 +14,7 @@ export const Products = ({ onProductSelected }) => {
 		<List>
 			{products.map((p, i) => (
 				<Product
-					isSelected={selected == i}
+					isSelected={selected === i}
 					key={p.id}
 					onClick={() => handleOnClickProduct(p, i)}
 				>

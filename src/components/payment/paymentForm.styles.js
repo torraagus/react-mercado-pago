@@ -148,9 +148,6 @@ export const Label = styled.label`
 `;
 
 export const CardWrapper = styled.div`
-	position: -webkit-sticky;
-	position: sticky;
-	top: 0;
 	background-color: #581b98;
 	width: 100vw;
 	padding: 1rem 0 1rem 0;

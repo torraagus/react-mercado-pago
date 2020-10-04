@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, Fragment } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Axios from "axios";
 import Cards from "react-credit-cards";
 import "react-credit-cards/es/styles-compiled.css";
@@ -43,7 +43,7 @@ export const PaymentForm = ({
 	const [email, setEmail] = useState("");
 	const [paymentMethodId, setPaymentMethodId] = useState("");
 	const [installments, setInstallments] = useState(1);
-	const [paymentState, setPaymentState] = useState(null);
+	// const [paymentState, setPaymentState] = useState(null);
 
 	// Refs
 	const payFormRef = useRef(null);
@@ -68,41 +68,103 @@ export const PaymentForm = ({
 	}, []);
 
 	useEffect(() => {
-		if (cardToken) processPayment();
-	}, [cardToken]);
+		if (cardToken) {
+			// const processPayment = () => {
+				Axios.post(
+					"/procesar_pago",
+					{
+						transaction_amount: transactionAmount,
+						token: cardToken,
+						description: "Some product",
+						installments,
+						payment_method_id: paymentMethodId,
+						payer: {
+							email,
+						},
+					},
+					{
+						"Content-Type": "application/json",
+					}
+				)
+					.then((res) => {
+						setDoSubmit(false);
+						console.log(res.data);
+						// setPaymentState(res.data.status);
+						onPaymentSuccess(res.data.status);
+					})
+					.catch((err) => {
+						console.log(`${err}`);
+						onPaymentError(err);
+						setDoSubmit(false);
+					});
+			// };
+		}
+	}, [cardToken, email, installments, onPaymentError, onPaymentSuccess, paymentMethodId, transactionAmount]);
 
 	useEffect(() => {
-		if (paymentMethodId) getInstallments();
+		if (paymentMethodId) {
+			// const getInstallments = useCallback(() => {
+			window.Mercadopago.getInstallments(
+				{
+					payment_method_id: paymentMethodId,
+					amount: parseFloat(transactionAmount),
+				},
+				(status, response) => {
+					if (status === 200) {
+						setOptions(() => response[0].payer_costs);
+					} else {
+						alert(`installments method info error: ${response}`);
+					}
+				}
+			);
+			// }, [paymentMethodId, transactionAmount]);
+		}
 	}, [paymentMethodId, transactionAmount]);
 
 	useEffect(() => {
 		setTransactionAmount(() => product.price);
-		if (paymentMethodId) getInstallments();
-	}, [product]);
+		if (paymentMethodId) {
+			// const getInstallments = useCallback(() => {
+				window.Mercadopago.getInstallments(
+					{
+						payment_method_id: paymentMethodId,
+						amount: parseFloat(transactionAmount),
+					},
+					(status, response) => {
+						if (status === 200) {
+							setOptions(() => response[0].payer_costs);
+						} else {
+							alert(`installments method info error: ${response}`);
+						}
+					}
+				);
+			// }, [paymentMethodId, transactionAmount]);
+		}
+	}, [paymentMethodId, product, transactionAmount]);
 
 	const setPaymentMethod = (status, response) => {
 		if (status === 200) {
-			setPaymentMethodId(response[0].id);
+			setPaymentMethodId(response[0].id)
 		} else {
 			alert(`payment method info error: ${response}`);
 		}
 	};
 
-	const getInstallments = () => {
-		window.Mercadopago.getInstallments(
-			{
-				payment_method_id: paymentMethodId,
-				amount: parseFloat(transactionAmount),
-			},
-			(status, response) => {
-				if (status === 200) {
-					setOptions(() => response[0].payer_costs);
-				} else {
-					alert(`installments method info error: ${response}`);
-				}
-			}
-		);
-	};
+	// const getInstallments = useCallback(() => {
+	// 	window.Mercadopago.getInstallments(
+	// 		{
+	// 			payment_method_id: paymentMethodId,
+	// 			amount: parseFloat(transactionAmount),
+	// 		},
+	// 		(status, response) => {
+	// 			if (status === 200) {
+	// 				setOptions(() => response[0].payer_costs);
+	// 			} else {
+	// 				alert(`installments method info error: ${response}`);
+	// 			}
+	// 		}
+	// 	);
+	// }, [paymentMethodId, transactionAmount]);
 
 	const doPay = (event) => {
 		event.preventDefault();
@@ -124,34 +186,7 @@ export const PaymentForm = ({
 		}
 	};
 
-	const processPayment = () => {
-		Axios.post(
-			"/procesar_pago",
-			{
-				transaction_amount: transactionAmount,
-				token: cardToken,
-				description: "Some product",
-				installments,
-				payment_method_id: paymentMethodId,
-				payer: {
-					email,
-				},
-			},
-			{
-				"Content-Type": "application/json",
-			}
-		)
-			.then((res) => {
-				setDoSubmit(false);
-				setPaymentState(res.data.status);
-				onPaymentSuccess(res.data.status);
-			})
-			.catch((err) => {
-				console.log(`${err}`);
-				onPaymentError(err);
-				setDoSubmit(false);
-			});
-	};
+	
 
 	return (
 		<>
