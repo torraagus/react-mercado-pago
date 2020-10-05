@@ -19,7 +19,7 @@ export const Products = ({ onProductSelected }) => {
 					onClick={() => handleOnClickProduct(p, i)}
 				>
 					<Img
-						src={require(`../../images/jpg/img${p.id}.jpg`)}
+						src={require(`../../images/img${p.id}.jpg`)}
 						alt={`photo#${i}`}
 					/>
 					<Description>{p.desc}</Description>
