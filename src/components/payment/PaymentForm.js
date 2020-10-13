@@ -20,12 +20,7 @@ import {
 import { MdErrorOutline } from "react-icons/md";
 require("dotenv").config();
 
-export const PaymentForm = ({
-	product,
-	onProcessingPayment,
-	onPaymentSuccess,
-	onPaymentError,
-}) => {
+export const PaymentForm = ({ product, onProcessingPayment, onPaymentSuccess, onPaymentError }) => {
 	// States
 	const [options, setOptions] = useState([]);
 	const [doSubmit, setDoSubmit] = useState(false);
@@ -43,7 +38,6 @@ export const PaymentForm = ({
 	const [email, setEmail] = useState("");
 	const [paymentMethodId, setPaymentMethodId] = useState("");
 	const [installments, setInstallments] = useState(1);
-	// const [paymentState, setPaymentState] = useState(null);
 
 	// Refs
 	const payFormRef = useRef(null);
@@ -64,46 +58,42 @@ export const PaymentForm = ({
 	useEffect(() => {
 		window.Mercadopago.setPublishableKey(process.env.REACT_APP_PUBLIC_KEY);
 		window.Mercadopago.getIdentificationTypes();
-		focusRef.current.focus();
-	}, []);
+	}, [paymentMethodId]);
 
 	useEffect(() => {
 		if (cardToken) {
-			// const processPayment = () => {
-				Axios.post(
-					"/procesar_pago",
-					{
-						transaction_amount: transactionAmount,
-						token: cardToken,
-						description: "Some product",
-						installments,
-						payment_method_id: paymentMethodId,
-						payer: {
-							email,
-						},
+			Axios.post(
+				"/procesar_pago",
+				{
+					transaction_amount: transactionAmount,
+					token: cardToken,
+					description: "Some product",
+					installments,
+					payment_method_id: paymentMethodId,
+					payer: {
+						email,
 					},
-					{
-						"Content-Type": "application/json",
-					}
-				)
-					.then((res) => {
-						setDoSubmit(false);
-						console.log(res.data);
-						// setPaymentState(res.data.status);
-						onPaymentSuccess(res.data.status);
-					})
-					.catch((err) => {
-						console.log(`${err}`);
-						onPaymentError(err);
-						setDoSubmit(false);
-					});
-			// };
+				},
+				{
+					"Content-Type": "application/json",
+				}
+			)
+				.then((res) => {
+					setDoSubmit(false);
+					console.log(res.data);
+					onPaymentSuccess(res.data.status);
+				})
+				.catch((err) => {
+					console.log(`${err}`);
+					onPaymentError(err);
+					setDoSubmit(false);
+				});
 		}
 	}, [cardToken, email, installments, onPaymentError, onPaymentSuccess, paymentMethodId, transactionAmount]);
 
 	useEffect(() => {
 		if (paymentMethodId) {
-			// const getInstallments = useCallback(() => {
+			focusRef.current.focus();
 			window.Mercadopago.getInstallments(
 				{
 					payment_method_id: paymentMethodId,
@@ -117,54 +107,35 @@ export const PaymentForm = ({
 					}
 				}
 			);
-			// }, [paymentMethodId, transactionAmount]);
 		}
 	}, [paymentMethodId, transactionAmount]);
 
 	useEffect(() => {
 		setTransactionAmount(() => product.price);
 		if (paymentMethodId) {
-			// const getInstallments = useCallback(() => {
-				window.Mercadopago.getInstallments(
-					{
-						payment_method_id: paymentMethodId,
-						amount: parseFloat(transactionAmount),
-					},
-					(status, response) => {
-						if (status === 200) {
-							setOptions(() => response[0].payer_costs);
-						} else {
-							alert(`installments method info error: ${response}`);
-						}
+			window.Mercadopago.getInstallments(
+				{
+					payment_method_id: paymentMethodId,
+					amount: parseFloat(transactionAmount),
+				},
+				(status, response) => {
+					if (status === 200) {
+						setOptions(() => response[0].payer_costs);
+					} else {
+						alert(`installments method info error: ${response}`);
 					}
-				);
-			// }, [paymentMethodId, transactionAmount]);
+				}
+			);
 		}
 	}, [paymentMethodId, product, transactionAmount]);
 
 	const setPaymentMethod = (status, response) => {
 		if (status === 200) {
-			setPaymentMethodId(response[0].id)
+			setPaymentMethodId(response[0].id);
 		} else {
 			alert(`payment method info error: ${response}`);
 		}
 	};
-
-	// const getInstallments = useCallback(() => {
-	// 	window.Mercadopago.getInstallments(
-	// 		{
-	// 			payment_method_id: paymentMethodId,
-	// 			amount: parseFloat(transactionAmount),
-	// 		},
-	// 		(status, response) => {
-	// 			if (status === 200) {
-	// 				setOptions(() => response[0].payer_costs);
-	// 			} else {
-	// 				alert(`installments method info error: ${response}`);
-	// 			}
-	// 		}
-	// 	);
-	// }, [paymentMethodId, transactionAmount]);
 
 	const doPay = (event) => {
 		event.preventDefault();
@@ -176,7 +147,6 @@ export const PaymentForm = ({
 
 	const sdkResponseHandler = (status, response) => {
 		if (status !== 200 && status !== 201) {
-			//alert("verify filled data");
 			console.log(response);
 			setError(response);
 		} else {
@@ -186,9 +156,7 @@ export const PaymentForm = ({
 		}
 	};
 
-	
-
-	return (
+	return paymentMethodId && installments ? (
 		<>
 			<CardWrapper>
 				<Cards
@@ -211,32 +179,24 @@ export const PaymentForm = ({
 						{error.cause.length > 0 &&
 							error.cause.map((cause) => (
 								<ErrorCause>
-									(Cod. {cause.code}) -{" "}
-									<CauseDescription>{cause.description}.</CauseDescription>
+									(Cod. {cause.code}) - <CauseDescription>{cause.description}.</CauseDescription>
 								</ErrorCause>
 							))}
 					</ErrorList>
 				</ErrorWrapper>
 			)}
-			<Form
-				isVisible={doSubmit}
-				ref={payFormRef}
-				onSubmit={doPay}
-				method="post"
-				id="pay"
-				name="pay"
-			>
+			<Form isVisible={doSubmit} ref={payFormRef} onSubmit={doPay} method="post" id="pay" name="pay">
 				<InputWrapper>
 					<Label htmlFor="cardNumber">Número de la tarjeta</Label>
 					<Input
-						ref={focusRef}
+						readOnly
 						type="text"
 						id="cardNumber"
 						name="number"
 						data-checkout="cardNumber"
 						autoComplete="off"
-						onKeyUp={(e) => setCardNumber(e.target.value)}
-						onChange={(e) => setCardNumber(e.target.value)}
+						// onKeyUp={(e) => setCardNumber(e.target.value)}
+						// onChange={(e) => setCardNumber(e.target.value)}
 						onFocus={(e) => setFocus(e.target.name)}
 						value={cardNumber}
 					/>
@@ -244,6 +204,7 @@ export const PaymentForm = ({
 				<InputWrapper>
 					<Label htmlFor="cardholderName">Nombre y apellido</Label>
 					<Input
+						ref={focusRef}
 						type="text"
 						name="name"
 						id="cardholderName"
@@ -256,12 +217,13 @@ export const PaymentForm = ({
 				<InputWrapper>
 					<Label htmlFor="cardExpirationMonth">Mes de vencimiento</Label>
 					<Input
+						readOnly
 						type="number"
 						id="cardExpirationMonth"
 						name="expiry"
 						data-checkout="cardExpirationMonth"
 						autoComplete="off"
-						onChange={(e) => setCardExpirationMonth(e.target.value)}
+						// onChange={(e) => setCardExpirationMonth(e.target.value)}
 						onFocus={(e) => setFocus(e.target.name)}
 						value={cardExpirationMonth}
 					/>
@@ -269,12 +231,13 @@ export const PaymentForm = ({
 				<InputWrapper>
 					<Label htmlFor="cardExpirationYear">Año de vencimiento</Label>
 					<Input
+						readOnly
 						type="number"
 						id="cardExpirationYear"
 						name="expiry"
 						data-checkout="cardExpirationYear"
 						autoComplete="off"
-						onChange={(e) => setCardExpirationYear(e.target.value)}
+						// onChange={(e) => setCardExpirationYear(e.target.value)}
 						onFocus={(e) => setFocus(e.target.name)}
 						value={cardExpirationYear}
 					/>
@@ -282,12 +245,13 @@ export const PaymentForm = ({
 				<InputWrapper>
 					<Label htmlFor="securityCode">Código de seguridad</Label>
 					<Input
+						readOnly
 						type="number"
 						id="securityCode"
 						name="cvc"
 						data-checkout="securityCode"
 						autoComplete="off"
-						onChange={(e) => setSecurityCode(e.target.value)}
+						// onChange={(e) => setSecurityCode(e.target.value)}
 						onFocus={(e) => setFocus(e.target.name)}
 						value={securityCode}
 					/>
@@ -339,5 +303,7 @@ export const PaymentForm = ({
 				</InputWrapper>
 			</Form>
 		</>
+	) : (
+		<p>Loading form...</p>
 	);
 };
